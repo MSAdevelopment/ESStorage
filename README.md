@@ -51,7 +51,9 @@ to show you the keys saved;
 
 now you can also delete items!
 
-do this: esDelete("Your Password")
+
+esDelete("Your Key" , "Your Password")
+
 
 do you want to delete all items?
 
