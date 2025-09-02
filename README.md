@@ -36,9 +36,17 @@ esShowAll("your Master key")
 
 
 and then run your project;
+
+
 then delete your master key inside esShowAll function
+
+
 and when you want to see all; you should write this:
+
+
 esShowAll("your setted Master key before")
+
+
 to show you the keys saved; 
 
 
