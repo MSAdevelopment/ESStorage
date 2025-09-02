@@ -110,31 +110,6 @@ function esShowAll(inputSecret) {
 
 
 
-// حذف یک آیتم
-function esDelete(key, password) {
-    const storageKey = ES_PREFIX + encodeKey(key);
-    const item = localStorage.getItem(storageKey);
-    if (!item) {
-        console.warn("❌ Item not found in ESStorage");
-        return false;
-    }
-    try {
-        const parsed = JSON.parse(atob(item));
-        const decrypted = xor(parsed.data, password + SECRET);
-        // چک کنیم رمز درست باشه
-        if (simpleHMAC(decrypted, password + SECRET) === parsed.mac) {
-            localStorage.removeItem(storageKey);
-            console.log(`✅ Item '${key}' deleted successfully.`);
-            return true;
-        } else {
-            console.error("❌ Wrong password, cannot delete item.");
-            return false;
-        }
-    } catch (e) {
-        console.error("❌ Error deleting item:", e);
-        return false;
-    }
-}
 
 // Delete a single item
 function esDelete(key, password) {
@@ -257,3 +232,4 @@ function decode(hashed, items) {
 // Read data: es('myKey', undefined, 'myPassword')
 // Show all ESStorage items: esShowAll("YourMasterSecret")  // first time
 // Show all ESStorage items: esShowAll()                    // after first time
+
