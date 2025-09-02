@@ -49,5 +49,15 @@ esShowAll("your setted Master key before")
 
 to show you the keys saved; 
 
+now you can also delete items!
+
+do this: esDelete("Your Password")
+
+do you want to delete all items?
+
+do this:
+
+esDeleteAll("Master Key you stored for esShowAll")
+
 
 MSA Development;
