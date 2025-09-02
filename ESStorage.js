@@ -5,7 +5,7 @@
 // Secure enough for casual use (XOR + HMAC simple tamper detection)
 
 // ------------------ Configuration ------------------
-const SECRET = "MSADEVCODE";   // secret key for XOR encryption
+const SECRET = "MSASecret123";   // secret key for XOR encryption
 const ES_PREFIX = "ES_";         // prefix to identify ESStorage items
 const BASE_ITEMS = [
     "iA", "IUF", "Asd", "Xx", "ZZ",
@@ -13,12 +13,12 @@ const BASE_ITEMS = [
     "αβγ", "δεζ", "λμν", "ξοπ", "ρστ",
     "🔥", "💀", "👻", "🌀", "⚡"
 ];
+const MASTER_KEY_NAME = "__ESMasterSecret__";
 
 let items = initItems(); // persistent items for encode/decode
 
 // ------------------ XOR Encryption/Decryption ------------------
 function xor(str, key) {
-    // Simple XOR for obfuscation
     return Array.from(str)
         .map((c, i) => String.fromCharCode(c.charCodeAt(0) ^ key.charCodeAt(i % key.length)))
         .join('');
@@ -26,13 +26,11 @@ function xor(str, key) {
 
 // ------------------ Encode Keys ------------------
 function encodeKey(str) {
-    // Encode name/key to Base64 for basic obfuscation
     return btoa(str);
 }
 
 // ------------------ Simple HMAC ------------------
 function simpleHMAC(str, key) {
-    // Simple hash for tamper detection
     let hash = 0;
     const combined = str + key;
     for (let i = 0; i < combined.length; i++) {
@@ -47,14 +45,14 @@ function es(name, content, key) {
     const eName = ES_PREFIX + encodeKey(name);
     const eKey = encodeKey(key);
 
-    // --- Save Data ---
+    // Save Data
     if (content !== undefined) {
         const encrypted = xor(content, SECRET);
         const hmac = simpleHMAC(encrypted, eKey);
         localStorage.setItem(eName, JSON.stringify({ data: encrypted, hmac: hmac }));
         return true;
     } 
-    // --- Read Data ---
+    // Read Data
     else {
         const raw = localStorage.getItem(eName);
         if (!raw) throw new Error("No item found");
@@ -65,8 +63,33 @@ function es(name, content, key) {
     }
 }
 
-// ================== Show All ESStorage Items ==================
-function esShowAll() {
+// ================== Master Secret Protected Show All ==================
+function esShowAll(inputSecret) {
+    let master = null;
+    try {
+        master = es(MASTER_KEY_NAME, undefined, "MASTER_KEY");
+    } catch {
+        master = null;
+    }
+
+    // First time: save master secret
+    if (!master) {
+        if (!inputSecret) {
+            console.warn("You must provide a master secret for the first time!");
+            return;
+        }
+        es(MASTER_KEY_NAME, inputSecret, "MASTER_KEY");
+        master = inputSecret;
+        console.log("Master secret saved securely.");
+    }
+
+    // Verify secret if provided
+    if (inputSecret && inputSecret !== master) {
+        console.warn("Access Denied! Wrong master secret.");
+        return;
+    }
+
+    // Show all ESStorage items
     console.log("=== All ESStorage Items ===");
     for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -157,4 +180,5 @@ function decode(hashed, items) {
 // ================== Usage Examples ==================
 // Save data: es('myKey','myContent','myPassword')
 // Read data: es('myKey', undefined, 'myPassword')
-// Show all ESStorage items: esShowAll()
+// Show all ESStorage items: esShowAll("YourMasterSecret")  // first time
+// Show all ESStorage items: esShowAll()                    // after first time
