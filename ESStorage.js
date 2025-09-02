@@ -107,6 +107,81 @@ function esShowAll(inputSecret) {
     console.log("=== End of ESStorage Items ===");
 }
 
+
+
+
+// حذف یک آیتم
+function esDelete(key, password) {
+    const storageKey = ES_PREFIX + encodeKey(key);
+    const item = localStorage.getItem(storageKey);
+    if (!item) {
+        console.warn("❌ Item not found in ESStorage");
+        return false;
+    }
+    try {
+        const parsed = JSON.parse(atob(item));
+        const decrypted = xor(parsed.data, password + SECRET);
+        // چک کنیم رمز درست باشه
+        if (simpleHMAC(decrypted, password + SECRET) === parsed.mac) {
+            localStorage.removeItem(storageKey);
+            console.log(`✅ Item '${key}' deleted successfully.`);
+            return true;
+        } else {
+            console.error("❌ Wrong password, cannot delete item.");
+            return false;
+        }
+    } catch (e) {
+        console.error("❌ Error deleting item:", e);
+        return false;
+    }
+}
+
+// Delete a single item
+function esDelete(key, password) {
+    const storageKey = ES_PREFIX + encodeKey(key);
+    const item = localStorage.getItem(storageKey);
+    if (!item) {
+        console.warn("❌ Item not found in ESStorage");
+        return false;
+    }
+    try {
+        const parsed = JSON.parse(atob(item));
+        const decrypted = xor(parsed.data, password + SECRET);
+        // Verify password
+        if (simpleHMAC(decrypted, password + SECRET) === parsed.mac) {
+            localStorage.removeItem(storageKey);
+            console.log(`✅ Item '${key}' deleted successfully.`);
+            return true;
+        } else {
+            console.error("❌ Wrong password, cannot delete item.");
+            return false;
+        }
+    } catch (e) {
+        console.error("❌ Error deleting item:", e);
+        return false;
+    }
+}
+
+// Delete all items
+function esDeleteAll(masterKey) {
+    const realMaster = localStorage.getItem(MASTER_KEY_NAME);
+    if (realMaster === null) {
+        console.error("❌ Master key not set. Use esShowAll('your key') first.");
+        return false;
+    }
+    if (realMaster !== masterKey) {
+        console.error("❌ Wrong master key.");
+        return false;
+    }
+    Object.keys(localStorage).forEach(k => {
+        if (k.startsWith(ES_PREFIX)) {
+            localStorage.removeItem(k);
+        }
+    });
+    console.log("✅ All ESStorage items deleted successfully.");
+    return true;
+}
+
 // ================== Persistent Encode/Decode Items ==================
 function en(id) {
     return encode(id, items);
